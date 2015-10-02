@@ -2,7 +2,7 @@
 Dante's Network Layer
 
 # ABOUT
-I am creating an application layer network that will allow individual nodes to act as hosts and clients.
+I am creating an application layer network that will allow individual nodes to act as both hosts and clients at the same time.
 
 A directory of live domains will be maintained at first by an Internet server, but then I will move this to a tarball that will be shared amongst the nodes, relegating some super nodes in charge of keeping master copies based on uptime and my own judgement.
 
