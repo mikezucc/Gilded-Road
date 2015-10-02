@@ -1,0 +1,876 @@
+
+<head>
+    <title>Dojo</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var $iframe = $('#dojoFrame');
+            if ( $iframe.length ) {
+                $iframe.attr('src', '/dojo/noti/');
+            }
+            $('.slackrow').hover(function () {
+                $(this).addClass('highlight');
+            }, function () {
+                $(this).removeClass('highlight');
+            });
+                          $('.slackrow').click(function () {
+                                               $('.slackrow').removeClass('selected');
+                                               $(this).addClass('selected');
+                                               $(this).removeClass('notification');
+                                               });
+            var timerid;
+            var waitingForClear = 0;
+            $("#m").on("input", function (e) {
+                
+                var value = $(this).val();
+                if ($(this).val() === "")
+                {
+                    if (waitingForClear)
+                    {
+                        waitingForClear = 0;
+                        socket.emit('user typing stop', { user: 'VH03yD97um98fQ43KB54EF20', dojo: selectedDojo, fullname: 'mike zucc' });
+                    }
+                }
+                if ($(this).val().length > 0) {
+                    if (!waitingForClear)
+                    {
+                        waitingForClear = 1;
+                        socket.emit('user typing active', { user: 'VH03yD97um98fQ43KB54EF20', dojo: selectedDojo, fullname: 'mike zucc' });
+                    }
+                }
+                if ($(this).data("lastval") != value) {
+                    $(this).data("lastval", value);
+                    /*
+                    clearTimeout(timerid);
+                    timerid = setTimeout(function () {
+                        if ($("#m").val() === "")
+                        {
+                            socket.emit('user typing stop', { user: 'VH03yD97um98fQ43KB54EF20', dojo: selectedDojo, fullname: 'mike zucc' });
+                        }
+                        else
+                        {
+                            socket.emit('user typing active', { user: 'VH03yD97um98fQ43KB54EF20', dojo: selectedDojo, fullname: 'mike zucc' });
+                        }
+                    }, 500);
+                    */
+                };
+            });
+            $('.tabs .tab-links a').on('click', function (e) {
+                var currentAttrValue = $(this).attr('href');
+                selectedDojo = currentAttrValue;
+                // Show/Hide Tabs
+                $('.tab').hide();
+                $('#tab' + currentAttrValue).show();
+
+                // Change/remove current tab to active
+                $(this).parent('li').addClass('active').siblings().removeClass('active');
+
+                e.preventDefault();
+            });
+            $('.tabs .tab-links a').on('hover', function (e) {
+                var currentAttrValue = $(this).attr('href');
+                // Show/Hide Tabs
+                $('.tab').hide();
+                $('#tab' + currentAttrValue).show();
+
+                // Change/remove current tab to active
+                $(this).parent('li').addClass('active').siblings().removeClass('active');
+
+            });
+            $('.tabs .tab-links a').mouseover(function () {
+                var currentAttrValue = $(this).attr('href');
+                console.log("hovering over that shit " + currentAttrValue);
+                // Show/Hide Tabs
+                $('.tab').hide();
+                $('#tab' + currentAttrValue).show();
+                // Change/remove current tab to active
+            }).mouseleave(function () {
+                var currentAttrValue = $(this).attr('href');
+                console.log("hovering over that shit " + currentAttrValue);
+
+                $('.tab').hide();
+                $('#tab' + selectedDojo).show();
+                // Show/Hide Tabs
+            });
+            $('.slackrow').click(function () {
+                $('.slackrow').removeClass('selected');
+                $(this).addClass('selected');
+                $(this).removeClass('notification');
+            });
+            $('.dropDown').click(function () {
+                                 var $iframe = $('#dojoFrame');
+                                 if ( $iframe.length ) {
+                                 $iframe.attr('src', '/dojo/noti/');
+                                 }
+            });
+            $("button.messageSender").on("click", function () {
+                console.log("sending message to chat: " + selectedDojo);
+                socket.emit('chat sent', { message: $('#m').val(), user: 'VH03yD97um98fQ43KB54EF20', dojo: selectedDojo, fullname: 'mike zucc' });
+                $('#m').val('');
+                $('#m').trigger('input');
+            });
+            $('#m').keydown(function (event) {
+                if (event.keyCode == 13) {
+                    $('.messageSender').trigger('click');
+                    return false;
+                }
+            });
+                          $('.onlineList').empty();
+                          var $chatElement = $('<a> Connecting to Chat... </a> <a id="manualConnect"> Click to Force Connect Attempt</a>');
+                          $('.onlineList').append($chatElement);
+                          url = 'generalchat';
+                          dojoName = 'Everyone';
+                          listOfChats[listOfChats.length] = url;
+                          var $newTab = $('<li id="skrill' + url + '"><a id="tabTitle' + url + '" href="' + url + '">' + dojoName + '</a></li>');
+                          $('.tab-links').append($newTab);
+                          var $newTabContent = $("<div>", { id: 'tab' + url, class: "tab" });
+                          $('.tab-content').append($newTabContent);
+                          
+                          $('.tabs .tab-links a').on('click', function (e) {
+                                                     var currentAttrValue = $(this).attr('href');
+                                                     selectedDojo = currentAttrValue;
+                                                     // Show/Hide Tabs
+                                                     $('.tab').hide();
+                                                     $('#tab' + currentAttrValue).show();
+                                                     $('#tabTitle' + currentAttrValue).removeClass('notification');
+                                                     $('#skrill' + currentAttrValue).removeClass('notification');
+                                                     $('#slack' + currentAttrValue).removeClass('notification');
+                                                     // Change/remove current tab to active
+                                                     $(this).parent('li').addClass('active').siblings().removeClass('active');
+                                                     
+                                                     e.preventDefault();
+                                                     });
+                          $('.tabs .tab-links a').mouseover( function () {
+                                                            var currentAttrValue = $(this).attr('href');
+                                                            console.log("hovering over that shit " + currentAttrValue);
+                                                            // Show/Hide Tabs
+                                                            $('.tab').hide();
+                                                            $('#tab' + currentAttrValue).show();
+                                                            $(".tab-content").scrollTop($(".tab-content")[0].scrollHeight);
+                                                            // Change/remove current tab to active
+                                                            }).mouseleave( function() {
+                                                                          var currentAttrValue = $(this).attr('href');
+                                                                          console.log("hovering over that shit " + currentAttrValue);
+                                                                          
+                                                                          $('.tab').hide();
+                                                                          $('#tab' + selectedDojo).show();
+                                                                          $(".tab-content").scrollTop($(".tab-content")[0].scrollHeight);
+                                                                          // Show/Hide Tabs
+                                                                          });
+                          $('.tabs .tab-links a').trigger('click');
+                          $('#manualConnect').click(function () {
+                                        console.log("attempting force conect");
+                                        socket = io('http://54.153.53.196:3000');
+                                        socket.emit('handshakeauth', { user: 'VH03yD97um98fQ43KB54EF20', fullname: 'mike zucc' });
+                                    });
+        });
+        var firstChat = 1;
+        var listOfChats = [];
+        function loadDojo(url, dojoName) {
+            var found = 0;
+            var $iframe = $('#dojoFrame');
+            if ( $iframe.length ) {
+                $iframe.attr('src', '/dojo/feed/' + url + '/');
+            }
+            for (var k = 0; k < listOfChats.length; k++) {
+                var roomTest = listOfChats[k];
+                if (roomTest === url) {
+                    // already in array
+                    found = 1;
+                    $('#' + url + '').trigger('click');
+                }
+            }
+            if (!found) {
+                listOfChats[listOfChats.length] = url;
+                var $newTab = $('<li id="skrill' + url + '"><a id="tabTitle' + url + '" href="' + url + '">' + dojoName + '</a></li>');
+                $('.tab-links').append($newTab);
+                var $newTabContent = $("<div>", { id: 'tab' + url, class: "tab" });
+                $('.tab-content').append($newTabContent);
+
+                $('.tabs .tab-links a').on('click', function (e) {
+                    var currentAttrValue = $(this).attr('href');
+                    selectedDojo = currentAttrValue;
+                    // Show/Hide Tabs
+                    $('.tab').hide();
+                    $('#tab' + currentAttrValue).show();
+                    $('#tabTitle' + currentAttrValue).removeClass('notification');
+                    $('#skrill' + currentAttrValue).removeClass('notification');
+                    $('#slack' + currentAttrValue).removeClass('notification');
+                    // Change/remove current tab to active
+                    $(this).parent('li').addClass('active').siblings().removeClass('active');
+                   
+                    e.preventDefault();
+                });
+                $('.tabs .tab-links a').mouseover( function () {
+                    var currentAttrValue = $(this).attr('href');
+                    console.log("hovering over that shit " + currentAttrValue);
+                    // Show/Hide Tabs
+                    $('.tab').hide();
+                    $('#tab' + currentAttrValue).show();
+                    $(".tab-content").scrollTop($(".tab-content")[0].scrollHeight);
+                    // Change/remove current tab to active
+                }).mouseleave( function() {
+                    var currentAttrValue = $(this).attr('href');
+                    console.log("hovering over that shit " + currentAttrValue);
+                   
+                    $('.tab').hide();
+                    $('#tab' + selectedDojo).show();
+                    $(".tab-content").scrollTop($(".tab-content")[0].scrollHeight);
+                    // Show/Hide Tabs
+                });
+                socket.emit('dojo sync', { dojo: url });
+                $('.tabs .tab-links a').trigger('click');
+            }
+        }
+        var selectedDojo = '';
+        var socket = io('http://54.153.53.196:3000');
+        socket.on('initializeConnect', function (data) {
+            console.log(data['welcome'] + ', ' + data['numUsers']);
+            socket.emit('handshakeauth', { user: 'VH03yD97um98fQ43KB54EF20', fullname: 'mike zucc' });
+        });
+        socket.on('user connected', function (data) {
+            console.log(data['fullname'] + ' is online!');
+            var $notiSquaw = $('<p>' + data['fullname'] + ' is online!' + '</p>').delay(1000).fadeOut();
+            $('#note').append($notiSquaw);
+        });
+        socket.on('handshakecomplete', function (data) {
+            console.log('auth status is ' + data['success']);
+            socket.emit('dojo sync', { dojo: url });
+        });
+        socket.on('dojo sync reply', function (data) {
+            console.log(data);
+            if (data['hasChat'] === 'yes')
+            {
+                var chatArray = data['dojoChat'];
+                var chatData;
+                for (i = 0; i < chatArray.length; i++)
+                {
+                    chatData = chatArray[i];
+                    var $chatElement = $('<a class="chatFullname">' + chatData['fullname'] + ':</a> <a class="chatPayload">' + chatData['message'] + '</a><br />');
+                    $('#tab' + chatData['dojo']).append($chatElement);
+                }
+                if (chatData['dojo'] !== selectedDojo) {
+                    console.log("flagging notification for " + chatData['dojo']);
+                    $('#skrill' + chatData['dojo']).addClass('notification');
+                    $('#tabTitle' + chatData['dojo']).addClass('notification');
+                }
+                else {
+                    $(".tab-content").scrollTop($(".tab-content")[0].scrollHeight);
+                }
+            }
+            
+        });
+        socket.on('userlist update', function (data) {
+            var usersList = data['listOfUsers'];
+            console.log(usersList);
+            var isEmpty = 1;
+            var numOfPeeps = 0;
+            $('.onlineList').empty();
+            for (var key in usersList) {
+                if (usersList.hasOwnProperty(key)) {
+                    isEmpty = 0;
+                    numOfPeeps++;
+                    console.log("dank tits: " + usersList[key]);
+                    var $chatElement = $('<a style="color:#57bdfe;">' + ((numOfPeeps > 1) ? ', ' : '') + usersList[key] + '</a>');
+                    $('.onlineList').append($chatElement);
+                }
+            }
+            if (!isEmpty)
+            {
+                if (numOfPeeps == 1)
+                {
+                    var $chatElement = $('<a> no one else is online. get some friends on! </a>');
+                    $('.onlineList').append($chatElement);
+                }
+                else
+                {
+                    var $chatElement = $('<a> is online (' + numOfPeeps + ')</a>');
+                    $('.onlineList').append($chatElement);
+                }
+                
+            }
+            else
+            {
+                var $chatElement = $('<a> no one else is online. get some friends on! </a>');
+                $('.onlineList').append($chatElement);
+            }
+        });
+        socket.on('user typing update', function (data) {
+            var typingList = data['listOfTypingUsers'];
+            console.log(typingList);
+            var isEmpty = 1;
+            var numOfPeeps = 0;
+            $('.typingListDiv').empty();
+            for (var dojo in typingList) {
+                if (typingList.hasOwnProperty(dojo)) {
+                    console.log("dank tits: " + typingList[dojo]);
+                    if (dojo === selectedDojo)
+                    {
+                        console.log("its this dojo");
+                        var typingForDojo = typingList[dojo];
+                        for (var user in typingForDojo) {
+                            if (typingForDojo.hasOwnProperty(user)) {
+                                isEmpty = 0;
+                                numOfPeeps++;
+                                console.log("user is " + user);
+                                var $chatElement = $('<a style="color:#57bdfe;">' + ((numOfPeeps > 1) ? ', ' : '') + typingForDojo[user] + '</a>');
+                                $('.typingListDiv').append($chatElement);
+                            }
+                        }
+                    }
+                }
+            }
+            if (!isEmpty) {
+                var $chatElement = $('<a> is typing lmao</a>');
+                $('.typingListDiv').append($chatElement);
+            }
+            else {
+                
+            }
+        });
+        socket.on('chat incoming', function (chatData) {
+            console.log(chatData);
+            var $chatElement = $('<a class="chatFullname">' + chatData['fullname'] + ':</a> <a class="chatPayload">' + chatData['message'] + '</a><br />');
+            $('#tab' + chatData['dojo']).append($chatElement);
+            if (chatData['dojo'] !== selectedDojo) {
+                console.log("flagging notification for " + chatData['dojo']);
+                $('#slack' + chatData['dojo']).addClass('notification');
+                $('#slack' + chatData['dojo']).fadeIn(100).fadeOut(100).fadeIn();
+                $('#skrill' + chatData['dojo']).addClass('notification');
+                $('#tabTitle' + chatData['dojo']).addClass('notification');
+                $('#skrill' + chatData['dojo']).fadeIn(100).fadeOut(100).fadeIn();
+                $('#tabTitle' + chatData['dojo']).fadeIn(100).fadeOut(100).fadeIn();
+            }
+            else
+            {
+                $(".tab-content").scrollTop($(".tab-content")[0].scrollHeight);
+            }
+        });
+    </script>
+
+</head>
+<style>
+    body {
+        margin-top: 0px;
+        margin-left: 0px;
+        font-family: "Arial", Arial, Sans-serif;
+        color: #808080;
+        display: inline;
+    }
+
+    div.slackbar {
+        width: 230px;
+        float: left;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        height: 800px;
+        background-color: #5f4667;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    div.slackrow {
+        width: 200px;
+        float: left;
+        display: block;
+        cursor: pointer;
+        text-shadow: 1px 1px 2px #9f39c7;
+        border-radius: 0px 5px 5px 0px;
+    }
+
+    .highlight {
+        background-color: #9f39c7;
+        color: White;
+    }
+
+    .selected {
+        background-color: #57bdfe;
+        color: #ffffff;
+    }
+
+    .notification {
+        background-color: #f7b52c;
+        color: #ffffff;
+    }
+
+    #dojoFrame {
+        width: 50%;
+        height: 800px;
+        overflow-y: hidden;
+        overflow-x: hidden;
+        margin-top: 0px;
+    }
+
+    #notiFrame {
+        width: 50%;
+        height: 800px;
+        overflow-y: hidden;
+        overflow-x: hidden;
+        margin-top: 0px;
+    }
+
+    #messageFrame {
+        width: 30%;
+        height: 800px;
+        overflow-y: hidden;
+        overflow-x: hidden;
+        border: 1px solid #b6b6b6;
+        display: inline-block;
+    }
+
+    div.dojoTitle {
+        padding-left: 10px;
+        padding-top: 3px;
+        padding-bottom: 3px;
+    }
+
+    div.dropDown {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        padding-right: 0px;
+        width: 100%;
+        text-align: center;
+        color: White;
+        cursor: pointer;
+        background-color: #44314f;
+    }
+
+    ::-webkit-scrollbar {
+        width: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
+        border-radius: 13px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        border-radius: 13px;
+        -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+    }
+
+    div.profileBox {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        padding-right: 0px;
+        width: 100%;
+        text-align: center;
+        color: White;
+        cursor: pointer;
+        border-top: 1px solid #71597e;
+    }
+
+    .tabs {
+        padding-left:5px;
+        padding-top:5px;
+        padding-bottom:5px;
+        padding-right:5px;
+        max-height:80px;
+        overflow-y:scroll;
+        width: 100%;
+        display: inline-block;
+        background-color:#dddddd;
+    }
+
+    /*----- Tab Links -----*/
+    /* Clearfix */
+    .tab-links:after {
+        display: block;
+        clear: both;
+        content: '';
+    }
+
+    .tab-links li {
+        margin: 0px 5px;
+        float: left;
+        list-style: none;
+        background-color: #5f4667;
+        border-radius: 5px 5px 5px 5px;
+    }
+
+    ul {
+        padding: 0px;
+        margin:0px;
+    }
+
+    .tab-links a {
+        padding: 5px 5px;
+        display: inline-block;
+        border-radius: 5px 5px 5px 5px;
+        font-size: 16px;
+        font-weight: 600;
+        color: White;
+        transition: all linear 0.15s;
+    }
+
+        .tab-links a:hover {
+            background-color: #a7cce5;
+            text-decoration: none;
+        }
+
+    li.active a, li.active a:hover {
+        background-color: #57bdfe;
+        color: White;
+        text-decoration: none;
+    }
+
+    /*----- Content of Tabs -----*/
+    .tab-content {
+        padding-top: 5px;
+        padding-left: 10px;
+        padding-right: 10px;
+        padding-bottom: 10px;
+        border-radius: 3px;
+        box-shadow: -1px 1px 1px rgba(0,0,0,0.15);
+        background-color: #fff;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        height: 80%;
+    }
+
+    .tab {
+        display: none;
+        padding-top:0px;
+    }
+
+        .tab.active {
+            display: block;
+        }
+
+    #inputArea {
+        position: absolute;
+        bottom: 0;
+    }
+
+    a.chatFullname {
+        font-size: 12px;
+        color: #7396cc;
+        text-shadow: 1px 1px 2px #b6b6b6;
+    }
+
+    a.chatPayload {
+        font-size: 13px;
+        padding-left: 5px;
+        padding-right: 30px;
+    }
+
+    a.dateStamp {
+        font-size: 12px;
+        color: #b6b6b6;
+    }
+
+    div.dojoChat {
+        height: 100%;
+        overflow-y: scroll;
+        overflow-x: hidden;
+    }
+
+    div.chatEntry {
+        padding-top: 20px;
+    }
+
+    #note {
+        position: absolute;
+        z-index: 101;
+        top: 0;
+        left: 0;
+        width: 230px;
+        background: #f7b52c;
+        color: White;
+        text-align: center;
+        font-size: 15px;
+        line-height: 2.5;
+        overflow: hidden;
+        -webkit-box-shadow: 0 0 5px black;
+        -moz-box-shadow: 0 0 5px black;
+        box-shadow: 0 0 5px black;
+    }
+</style>
+<html>
+<body>
+    <div class="slackbar">
+        <div id="note">
+
+        </div>
+        <div class="dropDown" id="dojoDropdown">Dojos</div>
+        <div class="formcon">
+            <form class="formshit" id="formshitID" enctype="multipart/form-data" action="/dojo/createdojo/" method="post" >
+                <input type='hidden' name='csrfmiddlewaretoken' value='efKrlS52EI8qasbxQV14IMWOF6uRjDm2' />
+                <input type="text" name="dojoname" />
+                <button type="submit" form="formshitID" > Create Dojo </button>
+            </form>
+        </div>
+        <div class="dojoSlackList">
+            
+            <div class="slackrow" id="slackRC8ZQPV7TPXKRLKUIU1JNLSVU6O6DH">
+                <div class="dojoTitle" onclick="return loadDojo('RC8ZQPV7TPXKRLKUIU1JNLSVU6O6DH','Karting League');">Karting League</div>
+            </div>
+            
+            <div class="slackrow" id="slackhr67dz29fY37vN73">
+                <div class="dojoTitle" onclick="return loadDojo('hr67dz29fY37vN73','autoholics - auto, racing, petrol');">autoholics - auto, racing, petrol</div>
+            </div>
+            
+            <div class="slackrow" id="slackXy01JD10FT57Pa19">
+                <div class="dojoTitle" onclick="return loadDojo('Xy01JD10FT57Pa19','thirst traps (NSFW)');">thirst traps (NSFW)</div>
+            </div>
+            
+            <div class="slackrow" id="slackXEPFLYMKOUUMGD299LBBMHH5U2X8RF">
+                <div class="dojoTitle" onclick="return loadDojo('XEPFLYMKOUUMGD299LBBMHH5U2X8RF','good ass music');">good ass music</div>
+            </div>
+            
+            <div class="slackrow" id="slack45E03AAN8FS0SETKV2O5M10FB2ZZI6">
+                <div class="dojoTitle" onclick="return loadDojo('45E03AAN8FS0SETKV2O5M10FB2ZZI6','i want pussy');">i want pussy</div>
+            </div>
+            
+            <div class="slackrow" id="slackED3TEN78EN1X5WTV1OAXZM7861GSRE">
+                <div class="dojoTitle" onclick="return loadDojo('ED3TEN78EN1X5WTV1OAXZM7861GSRE','Chdhdhdhc');">Chdhdhdhc</div>
+            </div>
+            
+            <div class="slackrow" id="slackW7SHKM9L9BOSUF8A0IV7FHQH26UC1K">
+                <div class="dojoTitle" onclick="return loadDojo('W7SHKM9L9BOSUF8A0IV7FHQH26UC1K','');"></div>
+            </div>
+            
+            <div class="slackrow" id="slack0F6IY3G1SEA4M2CAOX3H6CS35XSNY5">
+                <div class="dojoTitle" onclick="return loadDojo('0F6IY3G1SEA4M2CAOX3H6CS35XSNY5','');"></div>
+            </div>
+            
+            <div class="slackrow" id="slackiW18Qg91Vu35Ei89">
+                <div class="dojoTitle" onclick="return loadDojo('iW18Qg91Vu35Ei89','Toby the Dog');">Toby the Dog</div>
+            </div>
+            
+            <div class="slackrow" id="slackQXIIAPVON7SU6XHR3AZDPMD5KEONCT">
+                <div class="dojoTitle" onclick="return loadDojo('QXIIAPVON7SU6XHR3AZDPMD5KEONCT','fresh dojo');">fresh dojo</div>
+            </div>
+            
+            <div class="slackrow" id="slackFF9ZGDP6IA27AJ9RBC5N6TEY8G2QIT">
+                <div class="dojoTitle" onclick="return loadDojo('FF9ZGDP6IA27AJ9RBC5N6TEY8G2QIT','frugality');">frugality</div>
+            </div>
+            
+            <div class="slackrow" id="slack56T5U3IO7HXDCXXEKKM3E68906BEB6">
+                <div class="dojoTitle" onclick="return loadDojo('56T5U3IO7HXDCXXEKKM3E68906BEB6','manof');">manof</div>
+            </div>
+            
+            <div class="slackrow" id="slackYl39Zv57Ve00nH33">
+                <div class="dojoTitle" onclick="return loadDojo('Yl39Zv57Ve00nH33','Monterey car week');">Monterey car week</div>
+            </div>
+            
+            <div class="slackrow" id="slackmp19Mr72Nw91xO53">
+                <div class="dojoTitle" onclick="return loadDojo('mp19Mr72Nw91xO53','WannaBeRappers');">WannaBeRappers</div>
+            </div>
+            
+            <div class="slackrow" id="slackiW64RV17Pg61Mw59">
+                <div class="dojoTitle" onclick="return loadDojo('iW64RV17Pg61Mw59','CELEBSIGHTINGS');">CELEBSIGHTINGS</div>
+            </div>
+            
+            <div class="slackrow" id="slackBL65co83gx70LJ79">
+                <div class="dojoTitle" onclick="return loadDojo('BL65co83gx70LJ79','raptalk ');">raptalk </div>
+            </div>
+            
+            <div class="slackrow" id="slackkz11jS05wd10LM03">
+                <div class="dojoTitle" onclick="return loadDojo('kz11jS05wd10LM03','Dub Nation 🏀');">Dub Nation 🏀</div>
+            </div>
+            
+            <div class="slackrow" id="slackTA76dY31Sc96Mu38">
+                <div class="dojoTitle" onclick="return loadDojo('TA76dY31Sc96Mu38','the breakfast club');">the breakfast club</div>
+            </div>
+            
+            <div class="slackrow" id="slackoe90eh06Dm69yv13">
+                <div class="dojoTitle" onclick="return loadDojo('oe90eh06Dm69yv13','blackpeopletwitter');">blackpeopletwitter</div>
+            </div>
+            
+            <div class="slackrow" id="slackxM44wU49cp27sr86">
+                <div class="dojoTitle" onclick="return loadDojo('xM44wU49cp27sr86','Seattle shenanigans');">Seattle shenanigans</div>
+            </div>
+            
+            <div class="slackrow" id="slackmv38Jy53nY78Hh53">
+                <div class="dojoTitle" onclick="return loadDojo('mv38Jy53nY78Hh53','awww');">awww</div>
+            </div>
+            
+            <div class="slackrow" id="slackBY74pY34Wr34OB46">
+                <div class="dojoTitle" onclick="return loadDojo('BY74pY34Wr34OB46','dope photos');">dope photos</div>
+            </div>
+            
+            <div class="slackrow" id="slackLI58UY91iR54gn58">
+                <div class="dojoTitle" onclick="return loadDojo('LI58UY91iR54gn58','Movies');">Movies</div>
+            </div>
+            
+            <div class="slackrow" id="slackrT34Ik84ug96Nz80">
+                <div class="dojoTitle" onclick="return loadDojo('rT34Ik84ug96Nz80','squadout by kev minu dubs &amp; Huang ');">squadout by kev minu dubs &amp; Huang </div>
+            </div>
+            
+            <div class="slackrow" id="slackXY31Jt77kK40Ze98">
+                <div class="dojoTitle" onclick="return loadDojo('XY31Jt77kK40Ze98','hchangphotography');">hchangphotography</div>
+            </div>
+            
+            <div class="slackrow" id="slackFy88mE38vw51Et04">
+                <div class="dojoTitle" onclick="return loadDojo('Fy88mE38vw51Et04','Europe Explorers ');">Europe Explorers </div>
+            </div>
+            
+            <div class="slackrow" id="slackKF79fw42RH40XC00">
+                <div class="dojoTitle" onclick="return loadDojo('KF79fw42RH40XC00','Toga trash');">Toga trash</div>
+            </div>
+            
+            <div class="slackrow" id="slackBr68kq26yV44No20">
+                <div class="dojoTitle" onclick="return loadDojo('Br68kq26yV44No20','da turn up towah ');">da turn up towah </div>
+            </div>
+            
+            <div class="slackrow" id="slackUF12gz89CZ46yN85">
+                <div class="dojoTitle" onclick="return loadDojo('UF12gz89CZ46yN85','Cafe LaTTea');">Cafe LaTTea</div>
+            </div>
+            
+            <div class="slackrow" id="slackWj59rr72fO86km34">
+                <div class="dojoTitle" onclick="return loadDojo('Wj59rr72fO86km34','Sheikh&#39;s Palace');">Sheikh&#39;s Palace</div>
+            </div>
+            
+            <div class="slackrow" id="slackSl07el26nn82NI92">
+                <div class="dojoTitle" onclick="return loadDojo('Sl07el26nn82NI92','dunkindonutwheel');">dunkindonutwheel</div>
+            </div>
+            
+            <div class="slackrow" id="slacklw31YN64iL21Nv51">
+                <div class="dojoTitle" onclick="return loadDojo('lw31YN64iL21Nv51','españa ');">españa </div>
+            </div>
+            
+            <div class="slackrow" id="slackMA19Cr11np95su00">
+                <div class="dojoTitle" onclick="return loadDojo('MA19Cr11np95su00','a2');">a2</div>
+            </div>
+            
+            <div class="slackrow" id="slackby34SQ43Fw77nP55">
+                <div class="dojoTitle" onclick="return loadDojo('by34SQ43Fw77nP55','Chillers');">Chillers</div>
+            </div>
+            
+            <div class="slackrow" id="slackPN83Ng45wA99bu48">
+                <div class="dojoTitle" onclick="return loadDojo('PN83Ng45wA99bu48','San Jose State University');">San Jose State University</div>
+            </div>
+            
+            <div class="slackrow" id="slackEd49Od86Sy28xp52">
+                <div class="dojoTitle" onclick="return loadDojo('Ed49Od86Sy28xp52','Champions League');">Champions League</div>
+            </div>
+            
+            <div class="slackrow" id="slackDq68zX72ZQ94aY33">
+                <div class="dojoTitle" onclick="return loadDojo('Dq68zX72ZQ94aY33','MLS ');">MLS </div>
+            </div>
+            
+            <div class="slackrow" id="slackUS68IR23zv50VM56">
+                <div class="dojoTitle" onclick="return loadDojo('US68IR23zv50VM56','NBA');">NBA</div>
+            </div>
+            
+            <div class="slackrow" id="slackUU03xD65fI81jU40">
+                <div class="dojoTitle" onclick="return loadDojo('UU03xD65fI81jU40','South Bay House Music');">South Bay House Music</div>
+            </div>
+            
+            <div class="slackrow" id="slackED34AX96iJ36zY58">
+                <div class="dojoTitle" onclick="return loadDojo('ED34AX96iJ36zY58','sports gigs');">sports gigs</div>
+            </div>
+            
+            <div class="slackrow" id="slackiZ02xr78zr06ez35">
+                <div class="dojoTitle" onclick="return loadDojo('iZ02xr78zr06ez35','The Mo You Kno');">The Mo You Kno</div>
+            </div>
+            
+            <div class="slackrow" id="slackaf65CA40yl00ut24">
+                <div class="dojoTitle" onclick="return loadDojo('af65CA40yl00ut24','Places to go');">Places to go</div>
+            </div>
+            
+            <div class="slackrow" id="slackQc76Zx03Rz01yK43">
+                <div class="dojoTitle" onclick="return loadDojo('Qc76Zx03Rz01yK43','slothin around');">slothin around</div>
+            </div>
+            
+            <div class="slackrow" id="slackKo04Eg54LF22IE07">
+                <div class="dojoTitle" onclick="return loadDojo('Ko04Eg54LF22IE07','Cuarto ✨');">Cuarto ✨</div>
+            </div>
+            
+            <div class="slackrow" id="slackRh68jp53aa20Wb91">
+                <div class="dojoTitle" onclick="return loadDojo('Rh68jp53aa20Wb91','gettin pitted 2015');">gettin pitted 2015</div>
+            </div>
+            
+            <div class="slackrow" id="slackXW36Go30Na15fa90">
+                <div class="dojoTitle" onclick="return loadDojo('XW36Go30Na15fa90','kemper hall turnup 😏');">kemper hall turnup 😏</div>
+            </div>
+            
+            <div class="slackrow" id="slackBY73qa62iy68xU63">
+                <div class="dojoTitle" onclick="return loadDojo('BY73qa62iy68xU63','South Bay Grime Scene');">South Bay Grime Scene</div>
+            </div>
+            
+            <div class="slackrow" id="slackYA48Fd02II55jx94">
+                <div class="dojoTitle" onclick="return loadDojo('YA48Fd02II55jx94','USC');">USC</div>
+            </div>
+            
+            <div class="slackrow" id="slackvR85rw63aW99xg57">
+                <div class="dojoTitle" onclick="return loadDojo('vR85rw63aW99xg57','Real Dubstep Dojo');">Real Dubstep Dojo</div>
+            </div>
+            
+            <div class="slackrow" id="slackzs09TR16mJ24Ny71">
+                <div class="dojoTitle" onclick="return loadDojo('zs09TR16mJ24Ny71','Developer&#39;s Dojo');">Developer&#39;s Dojo</div>
+            </div>
+            
+            <div class="slackrow" id="slackFI39Cb70ty95fV97">
+                <div class="dojoTitle" onclick="return loadDojo('FI39Cb70ty95fV97','EPL');">EPL</div>
+            </div>
+            
+            <div class="slackrow" id="slackNU84XN12ag21EL96">
+                <div class="dojoTitle" onclick="return loadDojo('NU84XN12ag21EL96','Cuarto');">Cuarto</div>
+            </div>
+            
+            <div class="slackrow" id="slackAJ96Sl32rZ65fG69">
+                <div class="dojoTitle" onclick="return loadDojo('AJ96Sl32rZ65fG69','DDN -Daily Dojo Network');">DDN -Daily Dojo Network</div>
+            </div>
+            
+            <div class="slackrow" id="slackrg86CN25OL81Ub79">
+                <div class="dojoTitle" onclick="return loadDojo('rg86CN25OL81Ub79','big basin cafe ☕️');">big basin cafe ☕️</div>
+            </div>
+            
+            <div class="slackrow" id="slackRs86ru26HE17pT16">
+                <div class="dojoTitle" onclick="return loadDojo('Rs86ru26HE17pT16','urban - rhyme threads');">urban - rhyme threads</div>
+            </div>
+            
+            <div class="slackrow" id="slackkS43Yg71Qw70gn34">
+                <div class="dojoTitle" onclick="return loadDojo('kS43Yg71Qw70gn34','UCSD');">UCSD</div>
+            </div>
+            
+            <div class="slackrow" id="slackGZ11hI12mZ13wD31">
+                <div class="dojoTitle" onclick="return loadDojo('GZ11hI12mZ13wD31','Tin Foil Hat Squad');">Tin Foil Hat Squad</div>
+            </div>
+            
+            <div class="slackrow" id="slackrN61sl78Sv06pu59">
+                <div class="dojoTitle" onclick="return loadDojo('rN61sl78Sv06pu59','Tech news and tech ruckus');">Tech news and tech ruckus</div>
+            </div>
+            
+            <div class="slackrow" id="slackty12CR34Ex30ey64">
+                <div class="dojoTitle" onclick="return loadDojo('ty12CR34Ex30ey64','HC');">HC</div>
+            </div>
+            
+            <div class="slackrow" id="slackwn92uX07UF12eD49">
+                <div class="dojoTitle" onclick="return loadDojo('wn92uX07UF12eD49','beach trip otaku');">beach trip otaku</div>
+            </div>
+            
+        </div>
+        <div class="personSlackList" style="display:none;">
+            
+        </div>
+    </div>
+    <iframe id="dojoFrame" style="" src="">
+        <p>Your browser does not support iframes.</p>
+    </iframe>
+    <div id="messageFrame">
+        <div class="tabs">
+            <ul class="tab-links"></ul>
+        </div>
+        <div class="onlineList" style="display:block; border-bottom:1px solid #b6b6b6; border-top:1px solid #b6b6b6; padding-bottom:0px;">
+            
+        </div>
+        <div class="tab-content">
+
+        </div>
+        <div class="typingListDiv">
+
+        </div>
+        <div class="inputArea">
+            <textarea id="m" cols="50" rows="3"></textarea><button class="messageSender">Send That Shit</button>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<head>
+   <title> Karting League</title> 
+</head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+<script type="text/javascript">
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+                      $('.postParentButton').on('click', function (e) {
+                                                if ($('.mediaForm').is(':visible')) {
+                                                $('.mediaForm').hide();
+                                                }
+                                                else {
+                                                $('.mediaForm').show();
+                                                }
+                                                });
+                      $('.commentCountLabel').on('click', function (e) {
+                                                var selComDiv = '#' + $(this).attr('id') + 'commentDiv';
+                                                console.log('sel div is ' + selComDiv);
+                                                if ( $(selComDiv).is(':visible')) {
+                                                $( selComDiv ).hide();
+                                                }
+                                                else {
+                                                $( selComDiv ).show();
+                                                }
+                                                });
+                      $('.followButton').on('click', function (e) {
+                                            console.log($('.followButton').text());
+                                            if ($('.followButton').text() == "Follow")
+                                            {
+                                                $('.followButton').text("Unfollow");
+                                            }
+                                            else
+                                            {
+                                                $('.followButton').text("Follow");
+                                            }
+                                            $.ajax({
+                                                   type: "POST",
+                                                   url: "/dojo/follow/",
+                                                   data: { csrfmiddlewaretoken: "efKrlS52EI8qasbxQV14IMWOF6uRjDm2",
+                                                   state:"inactive",
+                                                   dojohash:"RC8ZQPV7TPXKRLKUIU1JNLSVU6O6DH"
+                                                   },
+                                                   success: function() {
+                                                   console.log("prototype")
+                                                   }
+                                                   });
+                                });
+                      $('.upVotePost').on('click', function (e) {
+                                            var posthash = $(this).attr('id').replace("postupvote", "");
+                                          $('#postdownvote' + posthash).removeAttr("style");
+                                          $('#postdownvote' + posthash).removeClass('downvoteenable');
+                                          $('#postdownvote' + posthash).addClass('voteneutral');
+                                          if ($(this).css('color') == 'rgb(255, 255, 255)')
+                                          {
+                                            $(this).removeClass('upvoteenable');
+                                          $(this).addClass('voteneutral');
+                                          }
+                                          else
+                                          {
+                                          $(this).addClass('upvoteenable');
+                                          $(this).removeClass('voteneutral')
+                                          }
+                                            $.ajax({
+                                                   type: "POST",
+                                                   url: "/dojo/upvote/",
+                                                   data: { csrfmiddlewaretoken: "efKrlS52EI8qasbxQV14IMWOF6uRjDm2",
+                                                   state:"inactive",
+                                                   dojohash:"RC8ZQPV7TPXKRLKUIU1JNLSVU6O6DH",
+                                                   posthash:posthash
+                                                   },
+                                                   success: function() {
+                                                   console.log("prototype")
+                                                   }
+                                                   });
+                                            });
+                      $('.downVotePost').on('click', function (e) {
+                                          var posthash = $(this).attr('id').replace("postdownvote", "");
+                                            $('#postupvote' + posthash).removeAttr("style");
+                                            $('#postupvote' + posthash).removeClass('upvoteenable');
+                                            $('#postupvote' + posthash).addClass('voteneutral');
+                                            if ($(this).css('color') == 'rgb(255, 255, 255)')
+                                            {
+                                            $(this).removeClass('downvoteenable');
+                                            $(this).addClass('voteneutral');
+                                            }
+                                            else
+                                            {
+                                            $(this).addClass('downvoteenable');
+                                            $(this).removeClass('voteneutral')
+                                            }
+                                          $.ajax({
+                                                 type: "POST",
+                                                 url: "/dojo/downvote/",
+                                                 data: { csrfmiddlewaretoken: "efKrlS52EI8qasbxQV14IMWOF6uRjDm2",
+                                                 state:"inactive",
+                                                 dojohash:"RC8ZQPV7TPXKRLKUIU1JNLSVU6O6DH",
+                                                 posthash:posthash
+                                                 },
+                                                 success: function() {
+                                                 console.log("prototype")
+                                                 }
+                                                 });
+                                          });
+                      $('.submitCommentDiv').on('click', function (e) {
+                                            var posthash = $(this).closest("div").attr("id").replace("comment", "");
+                                            var texta = $('#' + posthash + 'textarea').val();
+                                            //var posthash = $(this).attr('id').replace("commenttext-", "");
+                                                console.log('posting this ' + texta + ', with posthash ' + posthash);
+                                                var $chatElement = $('<img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=Rmn0HLHJ9JnrOcdiEDz4PhGNq0g%3D&amp;Expires=1443753107&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;"> mike zucc (53) - just now <a>           </a> <a style="padding-top:10px;padding-bottom:10px;">' + texta + '</a><br />');
+                                                $($chatElement).insertBefore($('#' + posthash + 'textarea'));
+                                                $('#' + posthash + 'textarea').val('');
+                                            $.ajax({
+                                                   type: "POST",
+                                                   url: "/dojo/submitcomment/",
+                                                   data: { csrfmiddlewaretoken: "efKrlS52EI8qasbxQV14IMWOF6uRjDm2",
+                                                   state:"inactive",
+                                                   dojohash:"RC8ZQPV7TPXKRLKUIU1JNLSVU6O6DH",
+                                                   posthash:posthash,
+                                                   description:texta
+                                                   },
+                                                   success: function() {
+                                                   console.log("prototype");
+                                                   }
+                                                   });
+                                            });
+                      
+                       // $('.dojoPosts').scrollTop($('#posttext' )[0].scrollHeight);
+                        $('.dojoPosts').animate({
+                                        scrollTop: $('#posttext' ).offset().top
+                                    }, 'slow');
+                      
+                      });
+</script>
+<style>
+    body {
+        font-family: "Arial", Arial, Sans-serif;
+        color: #424242;
+    }
+    div.dojoPosts {
+        width:100%;
+        overflow-y:hidden;
+        height:100%;
+    }
+    div.postHeader {
+        display:block;
+    }
+    div.postHeaderPiece {
+       padding-left: 10px;
+       float:left;
+       display:block;
+    }
+    div.postBody {
+        padding-top:60px;
+        display: block;
+    }
+    div.postContent {
+        display: block;
+    }
+    div.postContent img {
+		margin-left: auto;
+		margin-right: auto;
+        #min-height: 500px;
+        height:auto;
+		width: 100%;
+		max-width: 100%;
+	}
+    div.aPost {
+        border-top: 1px solid #808080;
+        padding-left: 10px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    a.chatFullname {
+        text-shadow:1px 1px 2px #b6b6b6;
+        font-size: 15px;
+        color: #0066FF;
+    }
+    a.postDescription {
+        display:block;
+        font-size: 15px;
+        padding-left: 30px;
+        padding-right: 30px;
+        border-left: 2px solid #b6b6b6;
+    }
+    a.dateStamp {
+        display:block;
+        font-size: 12px;
+        color: #b6b6b6;
+    }
+    a.posterInfo {
+        font-size: 12px;
+        color: #b6b6b6;
+        display:block;
+        text-shadow: 2px 2px #FFFFFF;
+    }
+    /* unvisited link */
+    a:link {
+        text-shadow:1px 1px 2px #b6b6b6;
+        text-decoration: none;
+        font: inherit;
+    }
+    .upVotePost {
+        display: inline;
+        cursor: pointer;
+        cursor: hand;
+    }
+.downVotePost {
+    display: inline;
+    cursor: pointer;
+    cursor: hand;
+}
+    /* visited link */
+    a:visited {
+        color: #006bff;
+    }
+.commentCountLabel {
+    cursor: pointer;
+    cursor: hand;
+}
+.postParentButton {
+    cursor: pointer;
+    cursor: hand;
+    background-color: #9922FF; color:white; padding:5px;
+}
+.submitCommentDiv {
+    cursor: pointer;
+    background-color: #9900FF; color:white; padding:5px;
+}
+    div.mediaForm {
+        width:100%;
+        height:150px;
+        display:block;
+    }
+    div.uploadPanel {
+        display:inline-block;
+        max-width:100%;
+        height:auto;
+    }
+.uploadIcon {
+    float:left;
+    width:40px;
+    height:40px;
+}
+.voteneutral {
+    background-color: white;
+    color: #424242;
+}
+.upvoteenable {
+    background-color: #49d36e; color:white; padding:5px;
+}
+.downvoteenable {
+    background-color: #3b80d5; color:white; padding:5px;
+}
+</style>
+<div class="headerdeets">
+    <h1>Karting League</h1>  <a id="followButtonID" class="followButton">Unfollow</a>  - <a class="postParentButton">Post Something</a>
+    <div class="mediaForm" style="display:none;">
+        <form class="formshit" id="formshitID" enctype="multipart/form-data" action="/dojo/postsomething/" method="post" >
+            <input type='hidden' name='csrfmiddlewaretoken' value='efKrlS52EI8qasbxQV14IMWOF6uRjDm2' />
+            <input type="hidden" name="mediaType" id="mediaTypeID" value="">
+            <div class="uploadPanel" id="panel1">
+                <img class="uploadIcon" id="photoPreview" src="https://cdn1.iconfinder.com/data/icons/trycons/32/image-512.png">
+                <input type="file" id="mediaPhotoID" name="mediaPhoto" accept="image/*">
+            </div>
+            <div class="uploadPanel" id="panel2">
+                <img class="uploadIcon" src="http://megaicons.net/static/img/icons_sizes/8/178/512/photo-video-start-icon.png">
+                <input type="file" id="mediaVideoID" name="mediaVideo" accept="video/*">
+            </div>
+            <div class="uploadPanel" id="panel3">
+                <textarea id="m" name="description" cols="50" rows="3"></textarea><button type="submit" form="formshitID" class="messageSender">Send That Shit</button>
+            </div>
+        </form>
+        <a>Text only, and/or with a picture, and/or with a video. Keep it real.</a>
+    </div>
+</div>
+<div class="dojoPosts">
+    
+    <div class="aPost" id="posttext-YBIZZFSTUO8B0HHTMF6F0QPDFFOGPXCA21T">
+        <div class="postHeader">
+            
+            <div class="postHeaderPiece">
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="width:40px; height: 40px; display:block;" alt="">
+            </div>
+            
+            <div class="postHeaderPiece">
+                <a class="posterInfo" href="/dojo/perfeed/VH03yD97um98fQ43KB54EF20/"> mike zucc</a>
+                <a class="posterInfo">a month ago</a>
+            </div>
+        </div>
+        <div class="postBody">
+            <div class="postContent" style=" display:block;">
+                
+                    
+                        
+                            <iframe width="420" height="315" src="https://www.youtube.com/embed/2vyZSNnOQPM" frameborder="0" allowfullscreen></iframe>
+                        
+                    
+                
+                <br />
+                
+            </div>
+            <br />
+            <div class="bottomBitches">
+                
+                <div class="upVotePost" id="postupvotetext-YBIZZFSTUO8B0HHTMF6F0QPDFFOGPXCA21T" >0 upvotes</div> |  <div class="downVotePost" id="postdownvotetext-YBIZZFSTUO8B0HHTMF6F0QPDFFOGPXCA21T" >0 downvotes</div> |
+                
+                <a class="commentCountLabel" id="1" style="background-color: #3366CC; color:white; padding:5px;" >0 comments </a> | 0 reposts
+                <br />
+            </div>
+            <div class="commentsnShit" id="1commentDiv" style="display:none;">
+                <div id="comblocktext-YBIZZFSTUO8B0HHTMF6F0QPDFFOGPXCA21T">
+                
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;">mike zucc (53) - a month ago</a> <a>           </a> <a style="padding-top:10px;padding-bottom:10px;"> posted to Karting League</a>
+                <br>
+                
+                </div>
+                <div class="submitYourOwnBS" id="1Div">
+                    <textarea id="text-YBIZZFSTUO8B0HHTMF6F0QPDFFOGPXCA21Ttextarea" name="description" cols="50" rows="3"></textarea><div class="submitCommentDiv" id="commenttext-YBIZZFSTUO8B0HHTMF6F0QPDFFOGPXCA21T" style="height:20px;width:auto; display:inline;">Comment</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="aPost" id="posttext-5B12AL1S9Q7JLBA1DP879JIDZOJ4ZOXKB73">
+        <div class="postHeader">
+            
+            <div class="postHeaderPiece">
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="width:40px; height: 40px; display:block;" alt="">
+            </div>
+            
+            <div class="postHeaderPiece">
+                <a class="posterInfo" href="/dojo/perfeed/VH03yD97um98fQ43KB54EF20/"> mike zucc</a>
+                <a class="posterInfo">a month ago</a>
+            </div>
+        </div>
+        <div class="postBody">
+            <div class="postContent" style=" display:block;">
+                
+                    
+                        
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/-d3UgfF6tF0" frameborder="0" allowfullscreen></iframe>
+                        
+                    
+                
+                <br />
+                
+            </div>
+            <br />
+            <div class="bottomBitches">
+                
+                <div class="upVotePost" id="postupvotetext-5B12AL1S9Q7JLBA1DP879JIDZOJ4ZOXKB73" >0 upvotes</div> |  <div class="downVotePost" id="postdownvotetext-5B12AL1S9Q7JLBA1DP879JIDZOJ4ZOXKB73" >0 downvotes</div> |
+                
+                <a class="commentCountLabel" id="2" style="background-color: #3366CC; color:white; padding:5px;" >0 comments </a> | 0 reposts
+                <br />
+            </div>
+            <div class="commentsnShit" id="2commentDiv" style="display:none;">
+                <div id="comblocktext-5B12AL1S9Q7JLBA1DP879JIDZOJ4ZOXKB73">
+                
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;">mike zucc (53) - a month ago</a> <a>           </a> <a style="padding-top:10px;padding-bottom:10px;"> posted to Karting League</a>
+                <br>
+                
+                </div>
+                <div class="submitYourOwnBS" id="2Div">
+                    <textarea id="text-5B12AL1S9Q7JLBA1DP879JIDZOJ4ZOXKB73textarea" name="description" cols="50" rows="3"></textarea><div class="submitCommentDiv" id="commenttext-5B12AL1S9Q7JLBA1DP879JIDZOJ4ZOXKB73" style="height:20px;width:auto; display:inline;">Comment</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="aPost" id="posttext-2MOILOSI8X5ZQ9DWGXJ9T7P3TJ5QMVG26Y1">
+        <div class="postHeader">
+            
+            <div class="postHeaderPiece">
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="width:40px; height: 40px; display:block;" alt="">
+            </div>
+            
+            <div class="postHeaderPiece">
+                <a class="posterInfo" href="/dojo/perfeed/VH03yD97um98fQ43KB54EF20/"> mike zucc</a>
+                <a class="posterInfo">a month ago</a>
+            </div>
+        </div>
+        <div class="postBody">
+            <div class="postContent" style=" display:block;">
+                
+                    
+                        
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/LxMSdvnm0Ms" frameborder="0" allowfullscreen></iframe>
+                        
+                    
+                
+                <br />
+                
+            </div>
+            <br />
+            <div class="bottomBitches">
+                
+                <div class="upVotePost" id="postupvotetext-2MOILOSI8X5ZQ9DWGXJ9T7P3TJ5QMVG26Y1" >0 upvotes</div> |  <div class="downVotePost" id="postdownvotetext-2MOILOSI8X5ZQ9DWGXJ9T7P3TJ5QMVG26Y1" >0 downvotes</div> |
+                
+                <a class="commentCountLabel" id="3" style="background-color: #3366CC; color:white; padding:5px;" >0 comments </a> | 0 reposts
+                <br />
+            </div>
+            <div class="commentsnShit" id="3commentDiv" style="display:none;">
+                <div id="comblocktext-2MOILOSI8X5ZQ9DWGXJ9T7P3TJ5QMVG26Y1">
+                
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;">mike zucc (53) - a month ago</a> <a>           </a> <a style="padding-top:10px;padding-bottom:10px;"> posted to Karting League</a>
+                <br>
+                
+                </div>
+                <div class="submitYourOwnBS" id="3Div">
+                    <textarea id="text-2MOILOSI8X5ZQ9DWGXJ9T7P3TJ5QMVG26Y1textarea" name="description" cols="50" rows="3"></textarea><div class="submitCommentDiv" id="commenttext-2MOILOSI8X5ZQ9DWGXJ9T7P3TJ5QMVG26Y1" style="height:20px;width:auto; display:inline;">Comment</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="aPost" id="postHP18MHC9R57ATO6MVSSITY3YB3XHWQ46O8A">
+        <div class="postHeader">
+            
+            <div class="postHeaderPiece">
+                <img src="https://dojopicbucket.s3.amazonaws.com/uG40xk54GL08CX63nz18xx23LK76gz13Ex21wY95?Signature=8rc7cQJ7YO3Ezo9aiGJXYeA1hyY%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="width:40px; height: 40px; display:block;" alt="">
+            </div>
+            
+            <div class="postHeaderPiece">
+                <a class="posterInfo" href="/dojo/perfeed/rd00xl48pA24gM41LW15zn65/"> dank</a>
+                <a class="posterInfo">a month ago</a>
+            </div>
+        </div>
+        <div class="postBody">
+            <div class="postContent" style=" display:block;">
+                
+                <br />
+                    
+                    <img src="https://dojopicbucket.s3.amazonaws.com/HP18MHC9R57ATO6MVSSITY3YB3XHWQ46O8A?Signature=6hHP4607gUe%2Fs%2BDoQftVEKB5gWk%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="display:block;" alt="">
+                    
+                
+                <br />
+                
+                <a class="postDescription"></a>
+                
+            </div>
+            <br />
+            <div class="bottomBitches">
+                
+                <div class="upVotePost" id="postupvoteHP18MHC9R57ATO6MVSSITY3YB3XHWQ46O8A" style="background-color: #49d36e; color:white; padding:5px;">1 upvotes</div> |  <div class="downVotePost" id="postdownvoteHP18MHC9R57ATO6MVSSITY3YB3XHWQ46O8A">0 downvotes</div> |
+                
+                <a class="commentCountLabel" id="4" style="background-color: #3366CC; color:white; padding:5px;" >1 comments </a> | 0 reposts
+                <br />
+            </div>
+            <div class="commentsnShit" id="4commentDiv" style="display:none;">
+                <div id="comblockHP18MHC9R57ATO6MVSSITY3YB3XHWQ46O8A">
+                
+                <img src="https://dojopicbucket.s3.amazonaws.com/uG40xk54GL08CX63nz18xx23LK76gz13Ex21wY95?Signature=8rc7cQJ7YO3Ezo9aiGJXYeA1hyY%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;">dank (11) - a month ago</a> <a>           </a> <a style="padding-top:10px;padding-bottom:10px;"> posted to Karting League</a>
+                <br>
+                
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;">mike zucc (53) - a month ago</a> <a>           </a> <a style="padding-top:10px;padding-bottom:10px;">fuck yes</a>
+                <br>
+                
+                </div>
+                <div class="submitYourOwnBS" id="4Div">
+                    <textarea id="HP18MHC9R57ATO6MVSSITY3YB3XHWQ46O8Atextarea" name="description" cols="50" rows="3"></textarea><div class="submitCommentDiv" id="commentHP18MHC9R57ATO6MVSSITY3YB3XHWQ46O8A" style="height:20px;width:auto; display:inline;">Comment</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="aPost" id="postZX6TZ93HSU73O8WRZLZURS6AR5V3DR08Y77">
+        <div class="postHeader">
+            
+            <div class="postHeaderPiece">
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="width:40px; height: 40px; display:block;" alt="">
+            </div>
+            
+            <div class="postHeaderPiece">
+                <a class="posterInfo" href="/dojo/perfeed/VH03yD97um98fQ43KB54EF20/"> mike zucc</a>
+                <a class="posterInfo">a month ago</a>
+            </div>
+        </div>
+        <div class="postBody">
+            <div class="postContent" style=" display:block;">
+                
+                <br />
+                    
+                    <img src="https://dojopicbucket.s3.amazonaws.com/ZX6TZ93HSU73O8WRZLZURS6AR5V3DR08Y77?Signature=yZlP5R8M3yUbtj5ocgBnE0l2dZo%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="display:block;" alt="">
+                    
+                
+                <br />
+                
+                <a class="postDescription">SOUND THE WAR HORNS</a>
+                
+            </div>
+            <br />
+            <div class="bottomBitches">
+                
+                <div class="upVotePost" id="postupvoteZX6TZ93HSU73O8WRZLZURS6AR5V3DR08Y77" >0 upvotes</div> |  <div class="downVotePost" id="postdownvoteZX6TZ93HSU73O8WRZLZURS6AR5V3DR08Y77" >0 downvotes</div> |
+                
+                <a class="commentCountLabel" id="5" style="background-color: #3366CC; color:white; padding:5px;" >0 comments </a> | 0 reposts
+                <br />
+            </div>
+            <div class="commentsnShit" id="5commentDiv" style="display:none;">
+                <div id="comblockZX6TZ93HSU73O8WRZLZURS6AR5V3DR08Y77">
+                
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;">mike zucc (53) - a month ago</a> <a>           </a> <a style="padding-top:10px;padding-bottom:10px;"> posted to Karting League</a>
+                <br>
+                
+                </div>
+                <div class="submitYourOwnBS" id="5Div">
+                    <textarea id="ZX6TZ93HSU73O8WRZLZURS6AR5V3DR08Y77textarea" name="description" cols="50" rows="3"></textarea><div class="submitCommentDiv" id="commentZX6TZ93HSU73O8WRZLZURS6AR5V3DR08Y77" style="height:20px;width:auto; display:inline;">Comment</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="aPost" id="post4NZ417BA19GLRE5QWKOR7K6J205KNU32QR8">
+        <div class="postHeader">
+            
+            <div class="postHeaderPiece">
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="width:40px; height: 40px; display:block;" alt="">
+            </div>
+            
+            <div class="postHeaderPiece">
+                <a class="posterInfo" href="/dojo/perfeed/VH03yD97um98fQ43KB54EF20/"> mike zucc</a>
+                <a class="posterInfo">a month ago</a>
+            </div>
+        </div>
+        <div class="postBody">
+            <div class="postContent" style=" display:block;">
+                
+                <br />
+                    
+                    <img src="https://dojopicbucket.s3.amazonaws.com/4NZ417BA19GLRE5QWKOR7K6J205KNU32QR8?Signature=dTlIeINcIHDM6Qx34hnRlvcSdrc%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="display:block;" alt="">
+                    
+                
+                <br />
+                
+                <a class="postDescription">SOUND THE WAR HORNS</a>
+                
+            </div>
+            <br />
+            <div class="bottomBitches">
+                
+                <div class="upVotePost" id="postupvote4NZ417BA19GLRE5QWKOR7K6J205KNU32QR8" >0 upvotes</div> |  <div class="downVotePost" id="postdownvote4NZ417BA19GLRE5QWKOR7K6J205KNU32QR8" >0 downvotes</div> |
+                
+                <a class="commentCountLabel" id="6" style="background-color: #3366CC; color:white; padding:5px;" >0 comments </a> | 0 reposts
+                <br />
+            </div>
+            <div class="commentsnShit" id="6commentDiv" style="display:none;">
+                <div id="comblock4NZ417BA19GLRE5QWKOR7K6J205KNU32QR8">
+                
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;">mike zucc (53) - a month ago</a> <a>           </a> <a style="padding-top:10px;padding-bottom:10px;"> posted to Karting League</a>
+                <br>
+                
+                </div>
+                <div class="submitYourOwnBS" id="6Div">
+                    <textarea id="4NZ417BA19GLRE5QWKOR7K6J205KNU32QR8textarea" name="description" cols="50" rows="3"></textarea><div class="submitCommentDiv" id="comment4NZ417BA19GLRE5QWKOR7K6J205KNU32QR8" style="height:20px;width:auto; display:inline;">Comment</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="aPost" id="post80HOB0KGORWUDKB8N0157ZT440O3W5LEYNG">
+        <div class="postHeader">
+            
+            <div class="postHeaderPiece">
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="width:40px; height: 40px; display:block;" alt="">
+            </div>
+            
+            <div class="postHeaderPiece">
+                <a class="posterInfo" href="/dojo/perfeed/VH03yD97um98fQ43KB54EF20/"> mike zucc</a>
+                <a class="posterInfo">a month ago</a>
+            </div>
+        </div>
+        <div class="postBody">
+            <div class="postContent" style=" display:block;">
+                
+                <br />
+                    
+                    <img src="https://dojopicbucket.s3.amazonaws.com/80HOB0KGORWUDKB8N0157ZT440O3W5LEYNG?Signature=wmpjJkAyLCX5ugr0DQhgTJYhBgs%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="display:block;" alt="">
+                    
+                
+                <br />
+                
+                <a class="postDescription">ICEMAN VS BIEBERHOLE VS QAMAR</a>
+                
+            </div>
+            <br />
+            <div class="bottomBitches">
+                
+                <div class="upVotePost" id="postupvote80HOB0KGORWUDKB8N0157ZT440O3W5LEYNG" >1 upvotes</div> |  <div class="downVotePost" id="postdownvote80HOB0KGORWUDKB8N0157ZT440O3W5LEYNG" >0 downvotes</div> |
+                
+                <a class="commentCountLabel" id="7" style="background-color: #3366CC; color:white; padding:5px;" >0 comments </a> | 0 reposts
+                <br />
+            </div>
+            <div class="commentsnShit" id="7commentDiv" style="display:none;">
+                <div id="comblock80HOB0KGORWUDKB8N0157ZT440O3W5LEYNG">
+                
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;">mike zucc (53) - a month ago</a> <a>           </a> <a style="padding-top:10px;padding-bottom:10px;"> posted to Karting League</a>
+                <br>
+                
+                </div>
+                <div class="submitYourOwnBS" id="7Div">
+                    <textarea id="80HOB0KGORWUDKB8N0157ZT440O3W5LEYNGtextarea" name="description" cols="50" rows="3"></textarea><div class="submitCommentDiv" id="comment80HOB0KGORWUDKB8N0157ZT440O3W5LEYNG" style="height:20px;width:auto; display:inline;">Comment</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="aPost" id="postI5WOL43Q8CKSE5SCWYP1CHFNI2H6LCI7KJD">
+        <div class="postHeader">
+            
+            <div class="postHeaderPiece">
+                <img src="https://dojopicbucket.s3.amazonaws.com/uG40xk54GL08CX63nz18xx23LK76gz13Ex21wY95?Signature=8rc7cQJ7YO3Ezo9aiGJXYeA1hyY%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="width:40px; height: 40px; display:block;" alt="">
+            </div>
+            
+            <div class="postHeaderPiece">
+                <a class="posterInfo" href="/dojo/perfeed/rd00xl48pA24gM41LW15zn65/"> dank</a>
+                <a class="posterInfo">a month ago</a>
+            </div>
+        </div>
+        <div class="postBody">
+            <div class="postContent" style=" display:block;">
+                
+                <br />
+                    
+                    <img src="https://dojopicbucket.s3.amazonaws.com/I5WOL43Q8CKSE5SCWYP1CHFNI2H6LCI7KJD?Signature=7UPheF9LPKB9YIingkhrE3kzago%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="display:block;" alt="">
+                    
+                
+                <br />
+                
+                <a class="postDescription"></a>
+                
+            </div>
+            <br />
+            <div class="bottomBitches">
+                
+                <div class="upVotePost" id="postupvoteI5WOL43Q8CKSE5SCWYP1CHFNI2H6LCI7KJD" style="background-color: #49d36e; color:white; padding:5px;">1 upvotes</div> |  <div class="downVotePost" id="postdownvoteI5WOL43Q8CKSE5SCWYP1CHFNI2H6LCI7KJD">0 downvotes</div> |
+                
+                <a class="commentCountLabel" id="8" style="background-color: #3366CC; color:white; padding:5px;" >1 comments </a> | 0 reposts
+                <br />
+            </div>
+            <div class="commentsnShit" id="8commentDiv" style="display:none;">
+                <div id="comblockI5WOL43Q8CKSE5SCWYP1CHFNI2H6LCI7KJD">
+                
+                <img src="https://dojopicbucket.s3.amazonaws.com/uG40xk54GL08CX63nz18xx23LK76gz13Ex21wY95?Signature=8rc7cQJ7YO3Ezo9aiGJXYeA1hyY%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;">dank (11) - a month ago</a> <a>           </a> <a style="padding-top:10px;padding-bottom:10px;"> posted to Karting League</a>
+                <br>
+                
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;">mike zucc (53) - a month ago</a> <a>           </a> <a style="padding-top:10px;padding-bottom:10px;">no fucking way I think that&#39;s Nelson piquet in the white blue and gold helmet next to him!</a>
+                <br>
+                
+                </div>
+                <div class="submitYourOwnBS" id="8Div">
+                    <textarea id="I5WOL43Q8CKSE5SCWYP1CHFNI2H6LCI7KJDtextarea" name="description" cols="50" rows="3"></textarea><div class="submitCommentDiv" id="commentI5WOL43Q8CKSE5SCWYP1CHFNI2H6LCI7KJD" style="height:20px;width:auto; display:inline;">Comment</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="aPost" id="posttext-XN2N071XYQ2FPFZE1TZBRNOKPND9VDJLOU8">
+        <div class="postHeader">
+            
+            <div class="postHeaderPiece">
+                <img src="https://dojopicbucket.s3.amazonaws.com/uG40xk54GL08CX63nz18xx23LK76gz13Ex21wY95?Signature=8rc7cQJ7YO3Ezo9aiGJXYeA1hyY%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="width:40px; height: 40px; display:block;" alt="">
+            </div>
+            
+            <div class="postHeaderPiece">
+                <a class="posterInfo" href="/dojo/perfeed/rd00xl48pA24gM41LW15zn65/"> dank</a>
+                <a class="posterInfo">a month ago</a>
+            </div>
+        </div>
+        <div class="postBody">
+            <div class="postContent" style=" display:block;">
+                
+                    
+                        
+                            <iframe width="560" height="315" src="http://www.youtube.com/embed/dCfalwm3Rqw" frameborder="0" allowfullscreen></iframe>
+                            <a class="postDescription">https://www.youtube.com/watch?v=dCfalwm3Rqw</a>
+                        
+                    
+                
+                <br />
+                
+            </div>
+            <br />
+            <div class="bottomBitches">
+                
+                <div class="upVotePost" id="postupvotetext-XN2N071XYQ2FPFZE1TZBRNOKPND9VDJLOU8" style="background-color: #49d36e; color:white; padding:5px;">1 upvotes</div> |  <div class="downVotePost" id="postdownvotetext-XN2N071XYQ2FPFZE1TZBRNOKPND9VDJLOU8">0 downvotes</div> |
+                
+                <a class="commentCountLabel" id="9" style="background-color: #3366CC; color:white; padding:5px;" >1 comments </a> | 0 reposts
+                <br />
+            </div>
+            <div class="commentsnShit" id="9commentDiv" style="display:none;">
+                <div id="comblocktext-XN2N071XYQ2FPFZE1TZBRNOKPND9VDJLOU8">
+                
+                <img src="https://dojopicbucket.s3.amazonaws.com/uG40xk54GL08CX63nz18xx23LK76gz13Ex21wY95?Signature=8rc7cQJ7YO3Ezo9aiGJXYeA1hyY%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;">dank (11) - a month ago</a> <a>           </a> <a style="padding-top:10px;padding-bottom:10px;"> posted to Karting League</a>
+                <br>
+                
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;">mike zucc (53) - a month ago</a> <a>           </a> <a style="padding-top:10px;padding-bottom:10px;">ugh fuck yes. I love this vid. we need to get a kart with that body kit</a>
+                <br>
+                
+                </div>
+                <div class="submitYourOwnBS" id="9Div">
+                    <textarea id="text-XN2N071XYQ2FPFZE1TZBRNOKPND9VDJLOU8textarea" name="description" cols="50" rows="3"></textarea><div class="submitCommentDiv" id="commenttext-XN2N071XYQ2FPFZE1TZBRNOKPND9VDJLOU8" style="height:20px;width:auto; display:inline;">Comment</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="aPost" id="posttext-E361MUD15CZ8VL7B72T8G19OSTZUOGE5N2O">
+        <div class="postHeader">
+            
+            <div class="postHeaderPiece">
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="width:40px; height: 40px; display:block;" alt="">
+            </div>
+            
+            <div class="postHeaderPiece">
+                <a class="posterInfo" href="/dojo/perfeed/VH03yD97um98fQ43KB54EF20/"> mike zucc</a>
+                <a class="posterInfo">a month ago</a>
+            </div>
+        </div>
+        <div class="postBody">
+            <div class="postContent" style=" display:block;">
+                
+                    
+                        
+                            <a class="postDescription">Bayford Meadows - Karting Race 1 (31/08/2014) - YouTube
+ 
+<a href="https://www.youtube.com/watch?v=0T9XSbV2dQQ" rel="nofollow">https://www.youtube.com/watch?v=0T9XSbV2dQQ</a></a>
+                        
+                    
+                
+                <br />
+                
+            </div>
+            <br />
+            <div class="bottomBitches">
+                
+                <div class="upVotePost" id="postupvotetext-E361MUD15CZ8VL7B72T8G19OSTZUOGE5N2O" >0 upvotes</div> |  <div class="downVotePost" id="postdownvotetext-E361MUD15CZ8VL7B72T8G19OSTZUOGE5N2O" >0 downvotes</div> |
+                
+                <a class="commentCountLabel" id="10" style="background-color: #3366CC; color:white; padding:5px;" >0 comments </a> | 0 reposts
+                <br />
+            </div>
+            <div class="commentsnShit" id="10commentDiv" style="display:none;">
+                <div id="comblocktext-E361MUD15CZ8VL7B72T8G19OSTZUOGE5N2O">
+                
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;">mike zucc (53) - a month ago</a> <a>           </a> <a style="padding-top:10px;padding-bottom:10px;"> posted to Karting League</a>
+                <br>
+                
+                </div>
+                <div class="submitYourOwnBS" id="10Div">
+                    <textarea id="text-E361MUD15CZ8VL7B72T8G19OSTZUOGE5N2Otextarea" name="description" cols="50" rows="3"></textarea><div class="submitCommentDiv" id="commenttext-E361MUD15CZ8VL7B72T8G19OSTZUOGE5N2O" style="height:20px;width:auto; display:inline;">Comment</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="aPost" id="posttext-CDR1YWLKIGUOGJ6ZYKBCNUZFRMW2L2WDBNQ">
+        <div class="postHeader">
+            
+            <div class="postHeaderPiece">
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="width:40px; height: 40px; display:block;" alt="">
+            </div>
+            
+            <div class="postHeaderPiece">
+                <a class="posterInfo" href="/dojo/perfeed/VH03yD97um98fQ43KB54EF20/"> mike zucc</a>
+                <a class="posterInfo">a month ago</a>
+            </div>
+        </div>
+        <div class="postBody">
+            <div class="postContent" style=" display:block;">
+                
+                    
+                        
+                            <iframe width="560" height="315" src="http://www.youtube.com/embed/6JlOZ2zGIpg" frameborder="0" allowfullscreen></iframe>
+                            <a class="postDescription">https://www.youtube.com/watch?v=6JlOZ2zGIpg get AMPED FOR THAT KARTING LIFE</a>
+                        
+                    
+                
+                <br />
+                
+            </div>
+            <br />
+            <div class="bottomBitches">
+                
+                <div class="upVotePost" id="postupvotetext-CDR1YWLKIGUOGJ6ZYKBCNUZFRMW2L2WDBNQ" style="background-color: #49d36e; color:white; padding:5px;">1 upvotes</div> |  <div class="downVotePost" id="postdownvotetext-CDR1YWLKIGUOGJ6ZYKBCNUZFRMW2L2WDBNQ">0 downvotes</div> |
+                
+                <a class="commentCountLabel" id="11" style="background-color: #3366CC; color:white; padding:5px;" >1 comments </a> | 0 reposts
+                <br />
+            </div>
+            <div class="commentsnShit" id="11commentDiv" style="display:none;">
+                <div id="comblocktext-CDR1YWLKIGUOGJ6ZYKBCNUZFRMW2L2WDBNQ">
+                
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;">mike zucc (53) - a month ago</a> <a>           </a> <a style="padding-top:10px;padding-bottom:10px;"> posted to Karting League</a>
+                <br>
+                
+                <img src="https://dojopicbucket.s3.amazonaws.com/T3OSN0BB2FHDEG55HHEEZIYO26F59VDA52I?Signature=uS2YYpB2O8v4UwopHjrlwxCn3P8%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;">mike zucc (53) - a month ago</a> <a>           </a> <a style="padding-top:10px;padding-bottom:10px;">hes got a sick outfit tho</a>
+                <br>
+                
+                </div>
+                <div class="submitYourOwnBS" id="11Div">
+                    <textarea id="text-CDR1YWLKIGUOGJ6ZYKBCNUZFRMW2L2WDBNQtextarea" name="description" cols="50" rows="3"></textarea><div class="submitCommentDiv" id="commenttext-CDR1YWLKIGUOGJ6ZYKBCNUZFRMW2L2WDBNQ" style="height:20px;width:auto; display:inline;">Comment</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="aPost" id="posttext-VSLD8AZJDK6AZ8GO6XBCVWZDW61GE6DPN75">
+        <div class="postHeader">
+            
+            <div class="postHeaderPiece">
+                <img src="https://dojopicbucket.s3.amazonaws.com/uG40xk54GL08CX63nz18xx23LK76gz13Ex21wY95?Signature=8rc7cQJ7YO3Ezo9aiGJXYeA1hyY%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="width:40px; height: 40px; display:block;" alt="">
+            </div>
+            
+            <div class="postHeaderPiece">
+                <a class="posterInfo" href="/dojo/perfeed/rd00xl48pA24gM41LW15zn65/"> dank</a>
+                <a class="posterInfo">a month ago</a>
+            </div>
+        </div>
+        <div class="postBody">
+            <div class="postContent" style=" display:block;">
+                
+                    
+                        
+                            <a class="postDescription">Welcome noobs... Let&#39;s race</a>
+                        
+                    
+                
+                <br />
+                
+            </div>
+            <br />
+            <div class="bottomBitches">
+                
+                <div class="upVotePost" id="postupvotetext-VSLD8AZJDK6AZ8GO6XBCVWZDW61GE6DPN75" style="background-color: #49d36e; color:white; padding:5px;">1 upvotes</div> |  <div class="downVotePost" id="postdownvotetext-VSLD8AZJDK6AZ8GO6XBCVWZDW61GE6DPN75">0 downvotes</div> |
+                
+                <a class="commentCountLabel" id="12" style="background-color: #3366CC; color:white; padding:5px;" >0 comments </a> | 0 reposts
+                <br />
+            </div>
+            <div class="commentsnShit" id="12commentDiv" style="display:none;">
+                <div id="comblocktext-VSLD8AZJDK6AZ8GO6XBCVWZDW61GE6DPN75">
+                
+                <img src="https://dojopicbucket.s3.amazonaws.com/uG40xk54GL08CX63nz18xx23LK76gz13Ex21wY95?Signature=8rc7cQJ7YO3Ezo9aiGJXYeA1hyY%3D&amp;Expires=1443753112&amp;AWSAccessKeyId=AKIAJ6TY5XEKWHMVPCJQ" style="height:40px; width:40px;" alt=""><a style="color:#808080;">dank (11) - a month ago</a> <a>           </a> <a style="padding-top:10px;padding-bottom:10px;"> posted to Karting League</a>
+                <br>
+                
+                </div>
+                <div class="submitYourOwnBS" id="12Div">
+                    <textarea id="text-VSLD8AZJDK6AZ8GO6XBCVWZDW61GE6DPN75textarea" name="description" cols="50" rows="3"></textarea><div class="submitCommentDiv" id="commenttext-VSLD8AZJDK6AZ8GO6XBCVWZDW61GE6DPN75" style="height:20px;width:auto; display:inline;">Comment</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+<script type="text/javascript">
+    document.getElementById("mediaPhotoID").onchange = function () {
+        var reader = new FileReader();
+        
+        reader.onload = function (e) {
+            // get loaded data and render thumbnail.
+            document.getElementById("photoPreview").src = e.target.result;
+        };
+        
+        // read the image file as a data URL.
+        reader.readAsDataURL(this.files[0]);
+    };
+    document.getElementById('formshitID').onsubmit = function() {
+        if (document.getElementById('mediaVideoID').value == '')
+        {
+            if (document.getElementById('mediaPhotoID').value == '')
+            {
+                document.getElementById('mediaTypeID').value = 'text';
+                return true;
+            }
+            else
+            {
+                document.getElementById('mediaTypeID').value = 'photo';
+                return true;
+            }
+        }
+        else
+        {
+            if (document.getElementById('mediaPhotoID').value == '')
+            {
+                document.getElementById('mediaTypeID').value = 'video';
+                return false;
+            }
+            else
+            {
+                document.getElementById('mediaTypeID').value = 'video';
+                return true;
+            }
+        }
+    };
+</script>
